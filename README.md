@@ -58,5 +58,7 @@ Author
 Nirupama S
 
 
+![workflow](email-n8n-workflow.png)
+
 
  
