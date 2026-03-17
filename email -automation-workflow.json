@@ -1,0 +1,232 @@
+{
+  "name": "My workflow 4",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -48,
+        0
+      ],
+      "id": "22df27f4-17ea-47e0-84b2-47d0fb1d0f4e",
+      "name": "When chat message received",
+      "webhookId": "3d2e7697-bfd4-4001-b1a1-486c405e0dcc"
+    },
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a personal assistant AI that helps the user draft work related emails\n \nCore responsibility:\nUse the context provided by the user to generate clear, professional,and conise emails.\n\n\nReturn the output ONLY in this JSON structure:\n\n{\n  \"emailRecipient\": \"<email address extracted from the user message>\",\n  \"subject\": \"<email subject>\",\n  \"body\": \"<email body>\"\n}\n \nEnure the tone matches the user intent(e.g,, formal, persuasive,polite,collaborative).\n \nOrganise email with peoper structure: greeting , closing,and signature (if provided).\n \nDatabase tools:  \nYou have access to tools that provide contact information such as names,job titles,and email addresses \n \nAlways use this data to personalize and correctly address each recipient.\n \nIf information is missing ,ask the user to clarify before finalizing the draft.\n \nTone: professional,polished,and aligned with workplace communication standards\n "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        296,
+        0
+      ],
+      "id": "7a7c940f-11e0-4971-9f77-dbd3b4f152f0",
+      "name": "AI Agent",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        176,
+        224
+      ],
+      "id": "c23f1e42-6b29-41e0-979f-e38a39869a18",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "1FEnfzEiC0itNPWQ",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "14253a0e-2eee-4ba7-a5ad-be1df4e18b97",
+              "name": "output",
+              "value": "={{$json.output}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        768,
+        0
+      ],
+      "id": "3d98db08-e4ca-433f-aeaf-f0d82a302a64",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        224
+      ],
+      "id": "ccd8f8c7-cf64-4646-97db-664f8b6c5e02",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{$fromAI(\"emailRecepient\")}}",
+        "subject": "={{$fromAI(\"Subject\")}}",
+        "emailType": "text",
+        "message": "={{ $fromAI(\"emailBody\")}}",
+        "options": {
+          "senderName": ""
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        208
+      ],
+      "id": "2313c7e5-1f7c-4df3-b2ee-5b80f203012e",
+      "name": "Send a message in Gmail",
+      "webhookId": "b3408a1a-2556-43a2-94c9-6acd3a20f9f5",
+      "notesInFlow": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ufxSuvZqa0NhEQEH",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1DNlsy7YCAGgI6n6QcB2YCaIjayQZoaOfOuoqVebRbG8",
+          "mode": "list",
+          "cachedResultName": "contact spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DNlsy7YCAGgI6n6QcB2YCaIjayQZoaOfOuoqVebRbG8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DNlsy7YCAGgI6n6QcB2YCaIjayQZoaOfOuoqVebRbG8/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        512,
+        223.32600732600736
+      ],
+      "id": "210aa061-e6fc-44da-a013-b66d959c11e5",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yq81zlvemQcQLwuq",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "c40bfd98-899e-43e6-9058-a35381977914",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ace8433e9893733176e9c30e96b98587389c21d817c723a7a6f502a708ff77fe"
+  },
+  "id": "7VE9GmNyBttzyMs2",
+  "tags": []
+}
